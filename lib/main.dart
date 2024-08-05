@@ -68,19 +68,19 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             ElevatedButton(
               onPressed: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => RotationScreen()),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RotationScreen()),
+                );
               },
               child: Text('Direction Rotation'),
             ),
             ElevatedButton(
               onPressed: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => TranslationScreen()),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Translation()),
+                );
               },
               child: Text('3D Translation'),
             ),
@@ -102,6 +102,7 @@ class TiltScreen extends StatefulWidget {
 
 double _sideTilt = 0.0;
 double _forwardTilt = 0.0; //global for state management
+double _rotation = 0.0;
 
 class _TiltScreenState extends State<TiltScreen> {
   late Object _cube;
@@ -171,6 +172,171 @@ class _TiltScreenState extends State<TiltScreen> {
             setState(() {
               onChanged(newValue);
               _updateRotation();
+            });
+          },
+        ),
+      ),
+      trailing: Text(value.toStringAsFixed(2)),
+    );
+  }
+}
+
+class RotationScreen extends StatefulWidget {
+  const RotationScreen({super.key});
+
+  @override
+  State<RotationScreen> createState() => _RotationScreenState();
+}
+
+class _RotationScreenState extends State<RotationScreen> {
+  late Object _cube;
+  Scene? _scene;
+
+  @override
+  void initState() {
+    super.initState();
+    _cube = Object(
+      position: Vector3(0, 0, 0),
+      scale: Vector3(5.0, 5.0, 5.0),
+      lighting: true,
+      backfaceCulling: false,
+      fileName: 'assets/cube/cube.obj',
+    );
+  }
+
+  void _updateRotation() {
+    if (_scene == null) return;
+    _cube.rotation.setValues(_sideTilt * 90, _rotation, _forwardTilt * 90);
+    _cube.updateTransform();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Direction Rotation'),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            ListTile(
+              title: Text('Rotation'),
+              subtitle: SizedBox(
+                width: 200,
+                child: Slider(
+                  value: _rotation,
+                  min: 0,
+                  max: 360,
+                  onChanged: (newValue) {
+                    setState(() {
+                      _rotation = newValue;
+                      _updateRotation();
+                    });
+                  },
+                ),
+              ),
+              trailing: Text(_rotation.toStringAsFixed(2)),
+            ),
+            Container(
+              height: 500,
+              color: Colors.black26,
+              child: Cube(
+                onSceneCreated: (Scene scene) {
+                  _scene = scene;
+                  scene.world.add(_cube);
+
+                  _updateRotation();
+                },
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//3d translation will determine the position of the model in the 3d space. the location of the model will be controlled by 3 sliders to determine the position in xyz plane
+
+double _x = 0.0;
+double _y = 0.0;
+double _z = 0.0;
+
+class Translation extends StatefulWidget {
+  const Translation({super.key});
+
+  @override
+  State<Translation> createState() => _TranslationState();
+}
+
+class _TranslationState extends State<Translation> {
+  late Object _cube;
+  Scene? _scene;
+
+  @override
+  void initState() {
+    super.initState();
+    _cube = Object(
+      position: Vector3(0, 0, 0),
+      scale: Vector3(5.0, 5.0, 5.0),
+      lighting: true,
+      backfaceCulling: false,
+      fileName: 'assets/cube/cube.obj',
+    );
+  }
+
+  void _updateTranslation() {
+    if (_scene == null) return;
+    _cube.position.setValues(_x, _y, _z);
+    _cube.rotation.setValues(_sideTilt * 90, _rotation, _forwardTilt * 90);
+    _cube.updateTransform();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('3D Translation'),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            _buildSlider('X', _x, (value) => _x = value),
+            _buildSlider('Y', _y, (value) => _y = value),
+            _buildSlider('Z', _z, (value) => _z = value),
+            Container(
+              height: 400,
+              color: Colors.black26,
+              child: Cube(
+                onSceneCreated: (Scene scene) {
+                  _scene = scene;
+                  scene.world.add(_cube);
+
+                  _updateTranslation();
+                },
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSlider(String title, double value, Function(double) onChanged) {
+    return ListTile(
+      title: Text(title),
+      subtitle: SizedBox(
+        width: 200,
+        child: Slider(
+          value: value,
+          min: -10.0,
+          max: 10.0,
+          onChanged: (newValue) {
+            setState(() {
+              onChanged(newValue);
+              _updateTranslation();
             });
           },
         ),
