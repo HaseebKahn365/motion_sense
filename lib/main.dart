@@ -100,10 +100,10 @@ class TiltScreen extends StatefulWidget {
   State<TiltScreen> createState() => _TiltScreenState();
 }
 
-class _TiltScreenState extends State<TiltScreen> {
-  double _sideTilt = 0.0;
-  double _forwardTilt = 0.0;
+double _sideTilt = 0.0;
+double _forwardTilt = 0.0; //global for state management
 
+class _TiltScreenState extends State<TiltScreen> {
   late Object _cube;
   Scene? _scene;
 
@@ -117,15 +117,13 @@ class _TiltScreenState extends State<TiltScreen> {
       backfaceCulling: false,
       fileName: 'assets/cube/cube.obj',
     );
-    _cube.rotation.setValues(0, 0, 0); //values in angles
-    _cube.updateTransform();
   }
 
   void _updateRotation() {
     if (_scene == null) return;
-    _cube.rotation.setValues(_rightTilt * 90, _leftTilt * 90, _forwardTilt * 90);
+    _cube.rotation.setValues(_sideTilt * 90, 90, _forwardTilt * 90); //the constant y value makes the model rotate which is the purpose of the compass. so i fixed it to 90 just to make the model face the right direction
     _cube.updateTransform();
-    log('$_rightTilt, $_leftTilt, $_forwardTilt');
+    log('$_sideTilt, $_forwardTilt');
   }
 
   @override
@@ -138,7 +136,7 @@ class _TiltScreenState extends State<TiltScreen> {
       body: SafeArea(
         child: Column(
           children: <Widget>[
-            _buildSlider('Side tilt', _rightTilt, (value) => _rightTilt = value),
+            _buildSlider('Side tilt', _sideTilt, (value) => _sideTilt = value),
             _buildSlider('Forward tilt', _forwardTilt, (value) => _forwardTilt = value),
             Expanded(
               child: Container(
